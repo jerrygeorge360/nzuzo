@@ -1,0 +1,29 @@
+{
+  "name": "nzuzo-pay-frontend",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@tanstack/react-query": "^5.90.21",
+    "@zama-fhe/relayer-sdk": "^0.4.2",
+    "ethers": "^6.13.5",
+    "fhevmjs": "^0.6.2",
+    "lucide-react": "^0.577.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "viem": "^2.23.2",
+    "wagmi": "^2.15.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.18",
+    "@types/react-dom": "^18.3.5",
+    "@vitejs/plugin-react": "^4.4.1",
+    "typescript": "^5.8.2",
+    "vite": "^6.2.1"
+  }
+}
