@@ -1,121 +1,179 @@
-# Nzuzo Pay: Confidential Payroll on FHEVM
+# Nzuzo Pay
 
-**Nzuzo Pay** is a privacy-first payroll management system built using **Fully Homomorphic Encryption (FHE)**. It allows employers to manage salaries and run payroll sessions where sensitive financial data—like individual salary amounts—remains encrypted on-chain, even during processing.
+> On-chain payroll where salary data stays encrypted — even during execution.
 
----
-
-## 🌟 Vision
-
-In traditional on-chain payroll systems, employee salaries are often public and easily trackable. **Nzuzo Pay** leverages the [FHEVM](https://fhevm.it) to ensure that:
-- **Salary Privacy**: Only the employer and the individual employee know the salary amount.
-- **Confidential Execution**: Payroll transfers happen using encrypted logic, preventing observers from seeing the value being moved.
-- **Selective Disclosure**: Employees can securely grant temporary access to their salary data for third parties (e.g., banks for credit checks) without making it public.
+Nzuzo Pay is a confidential payroll system built on [Zama's fhEVM](https://github.com/zama-ai/fhevm). Employers can register employees, set salaries, and run payroll — all without exposing a single salary figure on-chain. Every amount is stored and processed as a Fully Homomorphic Encryption (FHE) ciphertext.
 
 ---
 
-## 🚀 Core Features
+## The Problem
 
-- **Encrypted Salary Storage**: Salaries are stored as `euint64` (encrypted 64-bit unsigned integers).
-- **Automated Payroll Runs**: The employer can trigger a global payroll run that transfers the correct encrypted amount to every registered employee in a single transaction.
-- **FHE Access Control**: Granular control over who can "re-encrypt" or view the salary handles using the `TFHE.allow` mechanism.
-- **Confidential ERC20**: Full integration with privacy-preserving tokens that support encrypted balances and transfers.
+Every token transfer on a public blockchain is visible to anyone. In a standard on-chain payroll system, that means employee salaries are permanently readable — by competitors, colleagues, or anyone with a block explorer. Even moving payroll off-chain to preserve privacy defeats the purpose of building on a transparent, trustless ledger.
 
----
-
-## 🛠 Tech Stack
-
-- **Smart Contracts**: Solidity ^0.8.24
-- **Privacy Layer**: `fhevm`, `fhevm-contracts`
-- **Frontend**: React, Vite, TypeScript
-- **Blockchain Interaction**: `ethers`, `wagmi`, `viem`, `fhevmjs`
-- **Development Environment**: Hardhat
+Nzuzo Pay solves this without sacrificing on-chain execution.
 
 ---
 
-## 📂 Project Structure
+## How It Works
 
-```text
+Zama's fhEVM extends the EVM with native support for encrypted integers (`euint64`). Smart contracts can store, transfer, and compute on these values without ever decrypting them. The Zama network acts as a coprocessor, handling the FHE operations off-chain and posting the results back to Sepolia.
+
+This means:
+
+- **Salaries are stored encrypted.** The raw value never appears on-chain, not even during a payroll run.
+- **Transfers use encrypted amounts.** The Confidential ERC20 token accepts `euint64` directly — no plaintext leaves the system.
+- **Decryption is permissioned.** Only wallets explicitly granted access by the employer or employee can re-encrypt a salary handle and read the value.
+
+---
+
+## Features
+
+| Feature | Description |
+|---|---|
+| **Encrypted salary storage** | Salaries stored as `euint64` — encrypted on-chain at rest |
+| **One-transaction payroll** | Employer triggers a single `runPayroll()` to pay all employees |
+| **FHE access control** | Per-address ACL via `FHE.allow()` — employer and employee only |
+| **Selective disclosure** | Employees can grant temporary salary access to third parties (e.g. for credit checks) |
+| **Confidential treasury** | Employer treasury balance is encrypted; decrypted via `publicDecrypt` with no signing required |
+| **Confidential ERC20** | Full integration with encrypted-balance token transfers |
+
+---
+
+## Tech Stack
+
+| Layer | Technology |
+|---|---|
+| Smart Contracts | Solidity `^0.8.24` |
+| FHE Library | `@fhevm/solidity` v0.9 (`FHE.sol`) |
+| Token Standard | `fhevm-contracts` Confidential ERC20 |
+| Frontend | React + Vite + TypeScript |
+| Blockchain Interaction | `wagmi`, `viem` |
+| FHE Client SDK | `@zama-fhe/relayer-sdk` |
+| Dev Environment | Hardhat |
+| Network | Ethereum Sepolia |
+
+---
+
+## Project Structure
+
+```
 nzuzo/
-├── contracts/             # FHE-powered smart contracts
-│   ├── ConfidentialPayroll.sol  # Core business logic
-│   └── MockUSDC.sol             # Confidential test token
-├── frontend/              # React-based dApp
-│   ├── src/
-│   │   ├── components/    # Reusable UI components
-│   │   ├── hooks/         # Custom React hooks for FHE
-│   │   └── main.tsx       # Entry point
-├── tasks/                 # Hardhat tasks for deployment/testing
-└── test/                  # Contract unit tests
+├── contracts/
+│   ├── ConfidentialPayroll.sol   # Core payroll logic
+│   └── MockUSDC.sol              # Confidential ERC20 test token
+├── frontend/
+│   └── src/
+│       ├── components/           # UI components
+│       ├── hooks/                # FHE + contract hooks (useFhevm, usePayroll, useToken)
+│       └── main.tsx
+├── tasks/                        # Hardhat deployment & utility tasks
+└── test/                         # Contract unit tests
 ```
 
 ---
 
-## 🚦 Getting Started
+## Getting Started
 
 ### Prerequisites
 
-- [Node.js](https://nodejs.org/) (v20+ recommended)
-- [npm](https://www.npmjs.com/)
-- An **Ethereum Sepolia** RPC URL (from Infura, Alchemy, or a public node).
-- Testnet ETH on Sepolia (obtain from a faucet).
+- Node.js v20+
+- A Sepolia RPC URL (Infura, Alchemy, or public endpoint)
+- Sepolia testnet ETH — get some from a [faucet](https://sepoliafaucet.com)
+- MetaMask connected to Sepolia
 
-### Installation
+### Install
 
-1. Clone the repository:
-   ```bash
-   git clone <repository-url>
-   cd nzuzo
-   ```
+```bash
+# Clone and install root (Hardhat) dependencies
+git clone <repository-url>
+cd nzuzo
+npm install
 
-2. Install root dependencies (Hardhat):
-   ```bash
-   npm install
-   ```
+# Install frontend dependencies
+cd frontend && npm install && cd ..
+```
 
-3. Install frontend dependencies:
-   ```bash
-   cd frontend
-   npm install
-   cd ..
-   ```
+### Configure
+
+Create a `.env` file in the root:
+
+```env
+SEPOLIA_RPC_URL=https://sepolia.infura.io/v3/YOUR_KEY
+PRIVATE_KEY=0xYOUR_DEPLOYER_KEY
+```
+
+Create `frontend/.env`:
+
+```env
+VITE_PAYROLL_ADDRESS=0x...
+VITE_TOKEN_ADDRESS=0x...
+```
 
 ### Compile & Deploy
 
-1. Compile the smart contracts:
-   ```bash
-   npx hardhat compile
-   ```
+```bash
+# Compile contracts
+npx hardhat compile
 
-2. Deploy to the Sepolia testnet:
-   ```bash
-   npx hardhat deploy --network sepolia
-   ```
-   *Note: Since Zama acts as a coprocessor on Sepolia, you deploy to the standard Sepolia network, but your contracts will interact with Zama's off-chain components for FHE logic.*
+# Deploy to Sepolia
+npx hardhat deploy --network sepolia
+```
 
-### Run Frontend
+> Zama acts as a coprocessor on Sepolia. You deploy normally — FHE operations are handled off-chain by Zama's network and settled back on-chain transparently.
 
-Start the Vite development server:
+### Run the Frontend
+
 ```bash
 npm run frontend:dev
 ```
-The app will be available at `http://localhost:5173`.
 
-## 🌐 Deployments (Sepolia)
-
-The current live contracts on the Sepolia testnet are:
-
-| Contract | Address |
-| :--- | :--- |
-| **ConfidentialPayroll** | `0x558B63Bf465251437734e02eb5b0367f7290b0f0` |
-| **MockUSDC (mUSDC)** | `0x44cADD9F4f7Ee3c0cbAb26c553Ab454c856d4EDD` |
-
-> [!IMPORTANT]
-> To interact with these deployments via the frontend, your MetaMask **must be connected to Sepolia**.
-
-These addresses are also configured in `frontend/.env` for the React application.
+Open [http://localhost:5173](http://localhost:5173) and connect MetaMask.
 
 ---
 
-## 📜 License
+## Live Deployments (Sepolia)
 
-Distributed under the MIT License. See `LICENSE` for more information.
+| Contract | Address |
+|---|---|
+| ConfidentialPayroll | `0x558B63Bf465251437734e02eb5b0367f7290b0f0` |
+| MockUSDC (mUSDC) | `0x44cADD9F4f7Ee3c0cbAb26c553Ab454c856d4EDD` |
+
+> ⚠️ MetaMask must be on **Sepolia** to interact with these contracts via the frontend.
+
+Contract addresses are pre-configured in `frontend/.env`.
+
+---
+
+## Encryption Model
+
+Understanding how data flows through the system:
+
+```
+Employer sets salary
+        │
+        ▼
+  Client-side encrypt (Zama Relayer SDK)
+        │
+        ▼
+  euint64 handle stored on-chain
+        │
+        ├── employer  ──► FHE.allow() → can re-encrypt & view
+        ├── employee  ──► FHE.allow() → can re-encrypt & view
+        └── third party ─► employee grants FHE.allowTransient() → temporary access
+
+runPayroll()
+        │
+        ▼
+  FHE.allowTransient(salary, tokenContract)
+        │
+        ▼
+  token.transfer(employee, euint64)  ← no plaintext amount ever on-chain
+```
+
+Treasury balance uses `publicDecrypt` — no EIP-712 signature required since the balance is contract-owned, not wallet-owned.
+
+---
+
+## License
+
+MIT. See [`LICENSE`](./LICENSE) for details.
