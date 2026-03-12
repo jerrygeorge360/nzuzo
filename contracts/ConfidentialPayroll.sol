@@ -3,9 +3,10 @@ pragma solidity ^0.8.24;
 
 import "@fhevm/solidity/lib/FHE.sol";
 import "@fhevm/solidity/config/ZamaConfig.sol";
+import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import "./IConfidentialERC20.sol";
 
-contract ConfidentialPayroll is ZamaEthereumConfig {
+contract ConfidentialPayroll is ZamaEthereumConfig, ReentrancyGuard {
     address public employer;
     IConfidentialERC20 public token;
 
@@ -15,17 +16,24 @@ contract ConfidentialPayroll is ZamaEthereumConfig {
 
     euint64 private cachedTreasuryBalance;
 
+    uint256 public payrollCooldown; // in seconds, default 0
+    uint256 public lastPayrollRun;
+    uint256 public constant MAX_EMPLOYEES = 100;
+
     event EmployeeAdded(address indexed employee);
     event EmployeeRemoved(address indexed employee);
     event PayrollRun(uint256 timestamp, uint256 employeeCount);
+    event SalaryUpdated(address indexed employee, uint256 timestamp);
+    event BonusPaid(address indexed employee, uint256 timestamp, string memo);
+    event CooldownUpdated(uint256 cooldownInSeconds);
 
     modifier onlyEmployer() {
         require(msg.sender == employer, "Not employer");
         _;
     }
 
-    constructor(address tokenAddress) {
-        employer = msg.sender;
+    constructor(address tokenAddress, address _employer) {
+        employer = _employer;
         token = IConfidentialERC20(tokenAddress);
     }
 
@@ -35,10 +43,13 @@ contract ConfidentialPayroll is ZamaEthereumConfig {
         bytes calldata inputProof
     ) external onlyEmployer {
         require(!isEmployee[employee], "Already registered");
+        require(employees.length < MAX_EMPLOYEES, "Employee cap reached");
+
         euint64 salary = FHE.fromExternal(encryptedSalary, inputProof);
         FHE.allowThis(salary);
         FHE.allow(salary, employer);
         FHE.allow(salary, employee);
+
         salaries[employee] = salary;
         isEmployee[employee] = true;
         employees.push(employee);
@@ -49,6 +60,7 @@ contract ConfidentialPayroll is ZamaEthereumConfig {
         require(isEmployee[employee], "Not registered");
         isEmployee[employee] = false;
         salaries[employee] = euint64.wrap(0);
+
         uint256 len = employees.length;
         for (uint256 i = 0; i < len; i++) {
             if (employees[i] == employee) {
@@ -60,7 +72,52 @@ contract ConfidentialPayroll is ZamaEthereumConfig {
         emit EmployeeRemoved(employee);
     }
 
-    function runPayroll() external onlyEmployer {
+    function updateSalary(
+        address employee,
+        externalEuint64 encryptedSalary,
+        bytes calldata inputProof
+    ) external onlyEmployer {
+        require(isEmployee[employee], "Not registered");
+        euint64 salary = FHE.fromExternal(encryptedSalary, inputProof);
+        FHE.allowThis(salary);
+        FHE.allow(salary, employer);
+        FHE.allow(salary, employee);
+        salaries[employee] = salary;
+        emit SalaryUpdated(employee, block.timestamp);
+    }
+
+    function payBonus(
+        address employee,
+        externalEuint64 encryptedBonus,
+        bytes calldata inputProof,
+        string calldata memo
+    ) external onlyEmployer {
+        require(isEmployee[employee], "Not registered");
+        euint64 bonus = FHE.fromExternal(encryptedBonus, inputProof);
+        FHE.allowThis(bonus);
+        FHE.allow(bonus, employer);
+        FHE.allow(bonus, employee);
+        FHE.allowTransient(bonus, address(token));
+
+        token.transfer(employee, bonus);
+        emit BonusPaid(employee, block.timestamp, memo);
+    }
+
+    function setPayrollCooldown(
+        uint256 cooldownInSeconds
+    ) external onlyEmployer {
+        payrollCooldown = cooldownInSeconds;
+        emit CooldownUpdated(cooldownInSeconds);
+    }
+
+    function runPayroll() external onlyEmployer nonReentrant {
+        require(
+            payrollCooldown == 0 ||
+                block.timestamp >= lastPayrollRun + payrollCooldown,
+            "Payroll cooldown active"
+        );
+        lastPayrollRun = block.timestamp;
+
         uint256 count = employees.length;
         for (uint256 i = 0; i < count; i++) {
             address emp = employees[i];

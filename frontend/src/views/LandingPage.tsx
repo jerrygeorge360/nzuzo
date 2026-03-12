@@ -1,0 +1,373 @@
+import { useState, useEffect } from 'react';
+import { useAccount, useReadContract, usePublicClient, useWriteContract, useWaitForTransactionReceipt } from 'wagmi';
+import { useWallet } from '../hooks/useWallet';
+import { useNavigate } from 'react-router-dom';
+import { FACTORY_ADDRESS, FACTORY_ABI } from '../config/contracts';
+import { formatEther, isAddress, decodeEventLog } from 'viem';
+import { Plus, ArrowRight, Loader2, Globe, Building2, ShieldCheck, Hash, Coins, ExternalLink } from 'lucide-react';
+import { useFaucet } from '../hooks/useFaucet';
+
+export function LandingPage() {
+    const { address, isConnected, connect, isConnecting: isWalletConnecting, chain, switchChain } = useWallet();
+    const isWrongNetwork = isConnected && chain?.id !== 11155111;
+    const navigate = useNavigate();
+    const { writeContractAsync, data: txHash } = useWriteContract();
+    const { isLoading: isConfirming, data: receipt } = useWaitForTransactionReceipt({ hash: txHash });
+    const { requestMUSDC, isLoading: isFaucetLoading, status: faucetStatus, message: faucetMessage } = useFaucet();
+
+    const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+    const [manualUrl, setManualUrl] = useState('');
+    const [isJoining, setIsJoining] = useState(false);
+
+    const { data: deploymentFee } = useReadContract({
+        address: FACTORY_ADDRESS,
+        abi: FACTORY_ABI,
+        functionName: 'deploymentFee',
+    });
+
+    const handleCreateOrg = async () => {
+        if (!deploymentFee) return;
+        try {
+            await writeContractAsync({
+                address: FACTORY_ADDRESS,
+                abi: FACTORY_ABI,
+                functionName: 'createPayroll',
+                value: deploymentFee as bigint
+            });
+        } catch (err) {
+            console.error('[LandingPage] Deployment failed:', err);
+        }
+    };
+
+    // Watch for receipt and redirect to the new organization
+    useEffect(() => {
+        if (receipt) {
+            const log = receipt.logs.find(l => l.address.toLowerCase() === FACTORY_ADDRESS.toLowerCase());
+            if (log) {
+                try {
+                    const decoded = decodeEventLog({
+                        abi: FACTORY_ABI,
+                        data: log.data,
+                        topics: log.topics,
+                    });
+                    if (decoded.eventName === 'PayrollCreated') {
+                        const newOrgAddress = (decoded.args as any).payrollContract;
+                        if (newOrgAddress) {
+                            setIsCreateModalOpen(false);
+                            navigate(`/org/${newOrgAddress}`);
+                        }
+                    }
+                } catch (e) {
+                    console.error('Failed to decode deployment log', e);
+                }
+            }
+        }
+    }, [receipt, navigate]);
+
+    if (!isConnected) {
+        return (
+            <div className="app-layout" style={{ justifyContent: 'center', alignItems: 'center', overflowY: 'auto', padding: '40px' }}>
+                <div className="lock-grid-bg" />
+                <div style={{ maxWidth: '600px', textAlign: 'center', zIndex: 1 }}>
+                    <div style={{
+                        width: '80px', height: '80px', background: 'var(--accent-dim)', color: 'var(--accent)',
+                        borderRadius: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        margin: '0 auto 32px'
+                    }}>
+                        <Globe size={40} />
+                    </div>
+                    <h1 style={{ fontSize: '48px', fontWeight: 800, marginBottom: '16px', letterSpacing: '-0.02em', color: 'var(--text-primary)' }}>Nzuzo Pay</h1>
+                    <p style={{ fontSize: '18px', color: 'var(--text-secondary)', marginBottom: '40px', lineHeight: 1.6 }}>
+                        Privacy-first payroll management powered by Fully Homomorphic Encryption.
+                        Keep your organization's financial data confidential on-chain.
+                    </p>
+                    <button
+                        className="send-action-btn"
+                        style={{
+                            padding: '16px 32px',
+                            fontSize: '16px',
+                            margin: '0 auto',
+                            display: 'inline-flex',
+                            justifyContent: 'center'
+                        }}
+                        onClick={connect}
+                        disabled={isWalletConnecting}
+                    >
+                        {isWalletConnecting ? (
+                            <>
+                                <Loader2 size={18} className="animate-spin" style={{ marginRight: '8px' }} />
+                                Connecting...
+                            </>
+                        ) : 'Connect Wallet to Start'}
+                    </button>
+
+                    {/* Faucet Card for Disconnected State */}
+                    <div style={{
+                        marginTop: '64px',
+                        padding: '32px',
+                        border: '1px solid var(--border-hairline)',
+                        borderRadius: 'var(--radius)',
+                        background: 'var(--bg-elevated)',
+                        textAlign: 'left'
+                    }}>
+                        <h2 style={{ margin: '0 0 16px', fontSize: '18px', fontWeight: 700, color: 'var(--accent)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <Coins size={20} /> Get Testnet Tokens
+                        </h2>
+                        <p style={{ color: 'var(--text-secondary)', fontSize: '14px', marginBottom: '24px' }}>
+                            To use Nzuzo Pay on Sepolia you need testnet tokens.
+                        </p>
+
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
+                            <div>
+                                <h3 style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '8px' }}>Sepolia ETH — required for gas fees</h3>
+                                <a
+                                    href="https://sepoliafaucet.com"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="reveal-btn"
+                                    style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', textDecoration: 'none', height: '36px' }}
+                                >
+                                    Get Sepolia ETH <ExternalLink size={14} />
+                                </a>
+                            </div>
+
+                            <div>
+                                <h3 style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '8px' }}>mUSDC — required to fund your payroll treasury</h3>
+                                <div title={!isConnected ? "Connect wallet first" : ""}>
+                                    <button
+                                        className="send-action-btn"
+                                        onClick={() => address && requestMUSDC(address)}
+                                        disabled={!isConnected || isFaucetLoading}
+                                        style={{ height: '36px', width: '100%', justifyContent: 'center', opacity: !isConnected ? 0.5 : 1 }}
+                                    >
+                                        {isFaucetLoading ? 'Requesting...' : faucetStatus === 'success' ? '✅ 10,000 sent' : faucetStatus === 'error' ? '❌ Request failed' : 'Request mUSDC'}
+                                    </button>
+                                    {faucetMessage && <p style={{ fontSize: '11px', marginTop: '4px', textAlign: 'center', color: faucetStatus === 'success' ? 'var(--accent)' : 'var(--status-danger)' }}>{faucetMessage}</p>}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    if (isWrongNetwork) {
+        return (
+            <div className="app-layout" style={{ justifyContent: 'center', alignItems: 'center' }}>
+                <div className="lock-grid-bg" />
+                <div style={{ maxWidth: '400px', textAlign: 'center', padding: '40px', zIndex: 1, background: 'var(--bg-elevated)', border: '1px solid var(--border-hairline)', borderRadius: 'var(--radius)' }}>
+                    <div style={{ color: 'var(--status-danger)', marginBottom: '16px' }}>
+                        <ShieldCheck size={48} style={{ margin: '0 auto' }} />
+                    </div>
+                    <h2 style={{ fontSize: '20px', fontWeight: 700, marginBottom: '12px' }}>Wrong Network</h2>
+                    <p style={{ color: 'var(--text-secondary)', fontSize: '14px', marginBottom: '24px' }}>
+                        Nzuzo Pay operates exclusively on Ethereum Sepolia. Please switch your network to continue.
+                    </p>
+                    <button className="send-action-btn" style={{ width: '100%', justifyContent: 'center' }} onClick={switchChain}>
+                        Switch to Sepolia
+                    </button>
+                </div>
+            </div>
+        );
+    }
+
+    return (
+        <div className="app-layout" style={{ padding: '40px', overflowY: 'auto' }}>
+            <div className="lock-grid-bg" />
+            <div style={{ maxWidth: '1000px', margin: '0 auto', width: '100%', zIndex: 1 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '48px' }}>
+                    <div>
+                        <h1 style={{ fontSize: '32px', fontWeight: 800, color: 'var(--text-primary)' }}>Welcome back</h1>
+                        <p style={{ color: 'var(--text-tertiary)' }}>Manage your organizations or join a new one.</p>
+                    </div>
+                    <button className="send-action-btn" onClick={() => setIsCreateModalOpen(true)}>
+                        <Plus size={18} style={{ marginRight: '8px' }} />
+                        Create Organization
+                    </button>
+                </div>
+            </div>
+
+            {/* Faucet Card for Connected State */}
+            <div style={{
+                padding: '32px',
+                border: '1px solid var(--border-hairline)',
+                borderRadius: 'var(--radius)',
+                background: 'var(--bg-elevated)',
+                marginBottom: '32px'
+            }}>
+                <h2 style={{ margin: '0 0 16px', fontSize: '18px', fontWeight: 700, color: 'var(--accent)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <Coins size={20} /> Get Testnet Tokens
+                </h2>
+                <p style={{ color: 'var(--text-secondary)', fontSize: '14px', marginBottom: '24px' }}>
+                    To use Nzuzo Pay on Sepolia you need testnet tokens.
+                </p>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
+                    <div>
+                        <h3 style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '8px' }}>Sepolia ETH — required for gas fees</h3>
+                        <a
+                            href="https://sepoliafaucet.com"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="reveal-btn"
+                            style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', textDecoration: 'none', height: '36px' }}
+                        >
+                            Get Sepolia ETH <ExternalLink size={14} />
+                        </a>
+                    </div>
+
+                    <div>
+                        <h3 style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '8px' }}>mUSDC — required to fund your payroll treasury</h3>
+                        <div title={!isConnected ? "Connect wallet first" : ""}>
+                            <button
+                                className="send-action-btn"
+                                onClick={() => address && requestMUSDC(address)}
+                                disabled={!isConnected || isFaucetLoading}
+                                style={{ height: '36px', opacity: !isConnected ? 0.5 : 1 }}
+                            >
+                                {isFaucetLoading ? 'Requesting...' : faucetStatus === 'success' ? '✅ 10,000 sent' : faucetStatus === 'error' ? '❌ Request failed' : 'Request mUSDC'}
+                            </button>
+                            {faucetMessage && <p style={{ fontSize: '11px', marginTop: '4px', color: faucetStatus === 'success' ? 'var(--accent)' : 'var(--status-danger)' }}>{faucetMessage}</p>}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '32px', marginBottom: '64px' }}>
+                {/* Join Instructions Card */}
+                <div style={{
+                    padding: '32px',
+                    border: '1px solid var(--border-hairline)',
+                    borderRadius: 'var(--radius)',
+                    background: 'var(--bg-elevated)',
+                    display: 'flex',
+                    gap: '20px',
+                    alignItems: 'flex-start'
+                }}>
+                    <div style={{
+                        width: '48px',
+                        height: '48px',
+                        background: 'var(--accent-dim)',
+                        color: 'var(--accent)',
+                        borderRadius: '12px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        flexShrink: 0
+                    }}>
+                        <ShieldCheck size={24} />
+                    </div>
+                    <div>
+                        <h2 style={{ margin: '0 0 8px', fontSize: '16px', fontWeight: 700, color: 'var(--text-primary)' }}>Join Organization</h2>
+                        <p style={{ margin: 0, color: 'var(--text-secondary)', fontSize: '13px', lineHeight: 1.6 }}>
+                            Ask your organization admin to share their private invite link to get started as an employee or partner.
+                        </p>
+                    </div>
+                </div>
+
+                {/* Direct Access Card */}
+                <div style={{
+                    padding: '32px',
+                    border: '1px solid var(--border-hairline)',
+                    borderRadius: 'var(--radius)',
+                    background: 'var(--bg-elevated)',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'center',
+                    gap: '20px'
+                }}>
+                    <div style={{ display: 'flex', gap: '20px', alignItems: 'flex-start' }}>
+                        <div style={{
+                            width: '48px',
+                            height: '48px',
+                            background: 'rgba(255, 255, 255, 0.05)',
+                            color: 'var(--text-tertiary)',
+                            borderRadius: '12px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            flexShrink: 0
+                        }}>
+                            <Hash size={24} />
+                        </div>
+                        <div style={{ flex: 1 }}>
+                            <h2 style={{ margin: '0 0 4px', fontSize: '16px', fontWeight: 700, color: 'var(--text-primary)' }}>Direct Access</h2>
+                            <p style={{ margin: '0 0 16px', color: 'var(--text-tertiary)', fontSize: '12px' }}>Enter the contract address manually</p>
+                            <div style={{ display: 'flex', gap: '8px' }}>
+                                <input
+                                    type="text"
+                                    placeholder="0x..."
+                                    className="terminal-input"
+                                    style={{ height: '40px' }}
+                                    value={manualUrl}
+                                    onChange={(e) => setManualUrl(e.target.value)}
+                                    disabled={isJoining}
+                                />
+                                <button
+                                    className="reveal-btn"
+                                    style={{ height: '40px', padding: '0 16px', minWidth: '80px' }}
+                                    onClick={() => {
+                                        if (isAddress(manualUrl)) {
+                                            setIsJoining(true);
+                                            navigate(`/org/${manualUrl}`);
+                                        }
+                                    }}
+                                    disabled={!isAddress(manualUrl) || isJoining}
+                                >
+                                    {isJoining ? <Loader2 size={14} className="animate-spin" /> : (
+                                        <>
+                                            Go
+                                            <ArrowRight size={14} style={{ marginLeft: '8px' }} />
+                                        </>
+                                    )}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {isCreateModalOpen && (
+                <div className="modal-overlay">
+                    <div className="modal-content" style={{ maxWidth: '440px' }}>
+                        <h2 style={{ margin: '0 0 12px' }}>New Organization</h2>
+                        <p style={{ color: 'var(--text-secondary)', fontSize: '14px', marginBottom: '24px' }}>
+                            You are about to deploy a fresh Confidential Payroll instance. This contract will use MockUSDC
+                            for payments and enable FHE-powered privacy for all your employees.
+                        </p>
+
+                        <div style={{ background: 'var(--bg-root)', padding: '16px', borderRadius: '8px', marginBottom: '24px', border: '1px solid var(--border-hairline)' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+                                <span style={{ fontSize: '13px', color: 'var(--text-tertiary)' }}>Deployment Fee</span>
+                                <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)' }}>
+                                    {deploymentFee ? `${formatEther(deploymentFee as bigint)} ETH` : 'Loading...'}
+                                </span>
+                            </div>
+                            <div style={{ fontSize: '11px', color: 'var(--text-tertiary)', fontStyle: 'italic' }}>
+                                * Network gas fees will be additional.
+                            </div>
+                        </div>
+
+                        <div style={{ display: 'flex', gap: '12px' }}>
+                            <button className="fire-btn" style={{ flex: 1, background: 'var(--bg-elevated)', border: '1px solid var(--border-hairline)', color: 'var(--text-primary)' }} onClick={() => setIsCreateModalOpen(false)}>Cancel</button>
+                            <button
+                                className="send-action-btn"
+                                style={{ flex: 2 }}
+                                onClick={handleCreateOrg}
+                                disabled={isConfirming || !deploymentFee}
+                            >
+                                {isConfirming ? (
+                                    <>
+                                        <Loader2 size={16} className="animate-spin" style={{ marginRight: '8px' }} />
+                                        Deploying...
+                                    </>
+                                ) : 'Confirm & Deploy'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+}

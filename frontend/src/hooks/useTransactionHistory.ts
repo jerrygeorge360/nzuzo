@@ -1,55 +1,64 @@
 import { useCallback, useEffect, useState } from 'react';
 import { usePublicClient } from 'wagmi';
-import { PAYROLL_ADDRESS, PAYROLL_ABI, TOKEN_ADDRESS, TOKEN_ABI } from '../config/contracts';
+import { PAYROLL_ABI, TOKEN_ADDRESS, TOKEN_ABI, PAYROLL_DEPLOY_BLOCK } from '../config/contracts';
 import { parseAbiItem, getAddress } from 'viem';
 
 export type HistoryEvent = {
-    type: 'EmployeeAdded' | 'EmployeeRemoved' | 'PayrollRun' | 'Transfer';
+    type: 'EmployeeAdded' | 'EmployeeRemoved' | 'PayrollRun' | 'Transfer' | 'SalaryUpdated' | 'BonusPaid';
     detail: string;
     blockNumber: bigint;
     transactionHash: string;
     timestamp?: number;
 };
 
-export function useTransactionHistory() {
+export function useTransactionHistory(contractAddress: `0x${string}`) {
     const client = usePublicClient();
     const [events, setEvents] = useState<HistoryEvent[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
     const fetchHistory = useCallback(async () => {
-        if (!client) return;
+        if (!client || !contractAddress) return;
         setIsLoading(true);
         setError(null);
 
         try {
-            console.log('[History] Fetching logs...');
+            console.log('[History] Fetching logs for:', contractAddress);
 
-            // Fetch all event types in parallel
-            const [addedLogs, removedLogs, payrollLogs, transferLogs] = await Promise.all([
+            const latestBlock = await client.getBlockNumber();
+            const fromBlock = latestBlock - 9n;
+
+            // Fetch all event types in parallel using last 10 blocks
+            const [addedLogs, removedLogs, payrollLogs, transferLogs, salaryLogs, bonusLogs] = await Promise.all([
                 client.getLogs({
-                    address: PAYROLL_ADDRESS,
+                    address: contractAddress,
                     event: parseAbiItem('event EmployeeAdded(address indexed employee)'),
-                    fromBlock: 0n,
-                    toBlock: 'latest',
+                    fromBlock
                 }),
                 client.getLogs({
-                    address: PAYROLL_ADDRESS,
+                    address: contractAddress,
                     event: parseAbiItem('event EmployeeRemoved(address indexed employee)'),
-                    fromBlock: 0n,
-                    toBlock: 'latest',
+                    fromBlock
                 }),
                 client.getLogs({
-                    address: PAYROLL_ADDRESS,
+                    address: contractAddress,
                     event: parseAbiItem('event PayrollRun(uint256 timestamp, uint256 employeeCount)'),
-                    fromBlock: 0n,
-                    toBlock: 'latest',
+                    fromBlock
                 }),
                 client.getLogs({
                     address: TOKEN_ADDRESS,
                     event: parseAbiItem('event Transfer(address indexed from, address indexed to, uint256 amount)'),
-                    fromBlock: 0n,
-                    toBlock: 'latest',
+                    fromBlock
+                }),
+                client.getLogs({
+                    address: contractAddress,
+                    event: parseAbiItem('event SalaryUpdated(address indexed employee, uint256 timestamp)'),
+                    fromBlock
+                }),
+                client.getLogs({
+                    address: contractAddress,
+                    event: parseAbiItem('event BonusPaid(address indexed employee, uint256 timestamp, string memo)'),
+                    fromBlock
                 }),
             ]);
 
@@ -79,6 +88,18 @@ export function useTransactionHistory() {
                     blockNumber: l.blockNumber,
                     transactionHash: l.transactionHash,
                 })),
+                ...salaryLogs.map(l => ({
+                    type: 'SalaryUpdated' as const,
+                    detail: `Salary updated for ${l.args.employee}`,
+                    blockNumber: l.blockNumber,
+                    transactionHash: l.transactionHash,
+                })),
+                ...bonusLogs.map(l => ({
+                    type: 'BonusPaid' as const,
+                    detail: `Bonus paid: ${l.args.memo}`,
+                    blockNumber: l.blockNumber,
+                    transactionHash: l.transactionHash,
+                })),
             ];
 
             // Sort by block number descending
@@ -105,7 +126,7 @@ export function useTransactionHistory() {
         } finally {
             setIsLoading(false);
         }
-    }, [client]);
+    }, [client, contractAddress]);
 
     useEffect(() => {
         fetchHistory();

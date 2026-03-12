@@ -10,6 +10,8 @@ interface StatsBarProps {
     onHide?: () => void;
     isDecrypting?: boolean;
     revealed?: boolean;
+    isEmployer?: boolean;
+    onFund?: () => void;
 }
 
 export function StatsBar({
@@ -19,7 +21,9 @@ export function StatsBar({
     onReveal,
     onHide,
     isDecrypting,
-    revealed: externalRevealed
+    revealed: externalRevealed,
+    isEmployer,
+    onFund
 }: StatsBarProps) {
     const [internalRevealed, setInternalRevealed] = useState(false);
     const balanceRevealed = externalRevealed !== undefined ? externalRevealed : internalRevealed;
@@ -44,21 +48,32 @@ export function StatsBar({
                         revealed={balanceRevealed && !isDecrypting}
                         onToggle={toggleBalance}
                     />
-                    {!isDecrypting && (
-                        <button className="reveal-btn" onClick={toggleBalance}>
-                            {balanceRevealed ? (
-                                <>
-                                    <Lock size={12} style={{ marginRight: '4px' }} />
-                                    Hide
-                                </>
-                            ) : (
-                                <>
-                                    <Eye size={12} style={{ marginRight: '4px' }} />
-                                    Reveal
-                                </>
-                            )}
-                        </button>
-                    )}
+                    <div style={{ display: 'flex', gap: '8px', marginLeft: 'auto' }}>
+                        {!isDecrypting && (
+                            <button className="reveal-btn" onClick={toggleBalance}>
+                                {balanceRevealed ? (
+                                    <>
+                                        <Lock size={12} style={{ marginRight: '4px' }} />
+                                        Hide
+                                    </>
+                                ) : (
+                                    <>
+                                        <Eye size={12} style={{ marginRight: '4px' }} />
+                                        Reveal
+                                    </>
+                                )}
+                            </button>
+                        )}
+                        {isEmployer && (
+                            <button
+                                className="reveal-btn"
+                                style={{ background: 'var(--accent)', color: 'white', border: 'none' }}
+                                onClick={onFund}
+                            >
+                                Fund
+                            </button>
+                        )}
+                    </div>
                 </div>
                 <div className="stat-meta">ConfidentialERC20 • mUSDC</div>
             </div>

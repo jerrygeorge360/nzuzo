@@ -1,8 +1,12 @@
 import { useTransactionHistory, HistoryEvent } from '../hooks/useTransactionHistory';
 import { RefreshCw, ExternalLink, ArrowRightLeft, UserPlus, UserMinus, Play, Loader2 } from 'lucide-react';
 
-export function TransactionsView() {
-    const { events, isLoading, refresh } = useTransactionHistory();
+interface TransactionsViewProps {
+    contractAddress: `0x${string}`;
+}
+
+export function TransactionsView({ contractAddress }: TransactionsViewProps) {
+    const { events, isLoading, refresh } = useTransactionHistory(contractAddress);
 
     const getEventIcon = (type: HistoryEvent['type']) => {
         switch (type) {

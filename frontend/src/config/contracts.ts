@@ -1,6 +1,50 @@
 // ── Contract Addresses (set via Vite env vars after deployment) ──
-export const PAYROLL_ADDRESS = (import.meta.env.VITE_PAYROLL_ADDRESS || '') as `0x${string}`;
+export const FACTORY_ADDRESS = (import.meta.env.VITE_FACTORY_ADDRESS || '') as `0x${string}`;
 export const TOKEN_ADDRESS = (import.meta.env.VITE_TOKEN_ADDRESS || '') as `0x${string}`;
+export const FACTORY_DEPLOY_BLOCK = 10434411n;
+export const PAYROLL_DEPLOY_BLOCK = 10433478n;
+
+// ── PayrollFactory ABI ──
+export const FACTORY_ABI = [
+    {
+        inputs: [
+            { internalType: 'address', name: '_tokenAddress', type: 'address' },
+            { internalType: 'address', name: '_feeCollector', type: 'address' },
+        ],
+        stateMutability: 'nonpayable',
+        type: 'constructor',
+    },
+    {
+        anonymous: false,
+        inputs: [
+            { indexed: true, internalType: 'address', name: 'employer', type: 'address' },
+            { indexed: true, internalType: 'address', name: 'payrollContract', type: 'address' },
+        ],
+        name: 'PayrollCreated',
+        type: 'event',
+    },
+    {
+        inputs: [],
+        name: 'createPayroll',
+        outputs: [{ internalType: 'address', name: '', type: 'address' }],
+        stateMutability: 'payable',
+        type: 'function',
+    },
+    {
+        inputs: [{ internalType: 'address', name: 'employer', type: 'address' }],
+        name: 'getEmployerContracts',
+        outputs: [{ internalType: 'address[]', name: '', type: 'address[]' }],
+        stateMutability: 'view',
+        type: 'function',
+    },
+    {
+        inputs: [],
+        name: 'deploymentFee',
+        outputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
+        stateMutability: 'view',
+        type: 'function',
+    },
+] as const;
 
 // ── ConfidentialPayroll ABI ──
 export const PAYROLL_ABI = [
@@ -28,6 +72,31 @@ export const PAYROLL_ABI = [
             { indexed: false, internalType: 'uint256', name: 'employeeCount', type: 'uint256' },
         ],
         name: 'PayrollRun',
+        type: 'event',
+    },
+    {
+        anonymous: false,
+        inputs: [
+            { indexed: true, internalType: 'address', name: 'employee', type: 'address' },
+            { indexed: false, internalType: 'uint256', name: 'timestamp', type: 'uint256' },
+        ],
+        name: 'SalaryUpdated',
+        type: 'event',
+    },
+    {
+        anonymous: false,
+        inputs: [
+            { indexed: true, internalType: 'address', name: 'employee', type: 'address' },
+            { indexed: false, internalType: 'uint256', name: 'timestamp', type: 'uint256' },
+            { indexed: false, internalType: 'string', name: 'memo', type: 'string' },
+        ],
+        name: 'BonusPaid',
+        type: 'event',
+    },
+    {
+        anonymous: false,
+        inputs: [{ indexed: false, internalType: 'uint256', name: 'cooldownInSeconds', type: 'uint256' }],
+        name: 'CooldownUpdated',
         type: 'event',
     },
     {
@@ -94,6 +163,50 @@ export const PAYROLL_ABI = [
         inputs: [{ internalType: 'address', name: '', type: 'address' }],
         name: 'isEmployee',
         outputs: [{ internalType: 'bool', name: '', type: 'bool' }],
+        stateMutability: 'view',
+        type: 'function',
+    },
+    {
+        inputs: [
+            { internalType: 'address', name: 'employee', type: 'address' },
+            { internalType: 'einput', name: 'encryptedSalary', type: 'bytes32' },
+            { internalType: 'bytes', name: 'inputProof', type: 'bytes' },
+        ],
+        name: 'updateSalary',
+        outputs: [],
+        stateMutability: 'nonpayable',
+        type: 'function',
+    },
+    {
+        inputs: [
+            { internalType: 'address', name: 'employee', type: 'address' },
+            { internalType: 'einput', name: 'encryptedBonus', type: 'bytes32' },
+            { internalType: 'bytes', name: 'inputProof', type: 'bytes' },
+            { internalType: 'string', name: 'memo', type: 'string' },
+        ],
+        name: 'payBonus',
+        outputs: [],
+        stateMutability: 'nonpayable',
+        type: 'function',
+    },
+    {
+        inputs: [{ internalType: 'uint256', name: 'cooldownInSeconds', type: 'uint256' }],
+        name: 'setPayrollCooldown',
+        outputs: [],
+        stateMutability: 'nonpayable',
+        type: 'function',
+    },
+    {
+        inputs: [],
+        name: 'payrollCooldown',
+        outputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
+        stateMutability: 'view',
+        type: 'function',
+    },
+    {
+        inputs: [],
+        name: 'lastPayrollRun',
+        outputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
         stateMutability: 'view',
         type: 'function',
     },
