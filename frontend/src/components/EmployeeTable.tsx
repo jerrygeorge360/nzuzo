@@ -14,6 +14,7 @@ interface EmployeeTableProps {
     onFire: (address: string) => void;
     walletAddress: string;
     contractAddress: string;
+    nftAddress?: `0x${string}`;
 }
 
 export function EmployeeTable({
@@ -22,7 +23,8 @@ export function EmployeeTable({
     isLoading,
     onFire,
     walletAddress,
-    contractAddress
+    contractAddress,
+    nftAddress
 }: EmployeeTableProps) {
     if (isLoading) {
         return (
@@ -63,6 +65,7 @@ export function EmployeeTable({
                             onRemove={onFire}
                             walletAddress={walletAddress}
                             contractAddress={contractAddress}
+                            nftAddress={nftAddress}
                         />
                     ))}
 

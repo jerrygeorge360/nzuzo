@@ -41,10 +41,10 @@ export function FundTreasuryModal({
         setError(null);
 
         try {
-            // 1. Encrypt the amount for the payroll contract
+            // 1. Encrypt the amount for the mUSDC contract (the recipient of this transfer)
             const { inputHandle, inputProof } = await encrypt64(
                 Number(amount),
-                contractAddress,
+                TOKEN_ADDRESS,
                 walletAddress
             );
 
@@ -55,6 +55,7 @@ export function FundTreasuryModal({
                 abi: TOKEN_ABI,
                 functionName: 'transfer',
                 args: [contractAddress, inputHandle, inputProof],
+                gas: 6_000_000n, // Explicit safeguard for FHE operations
             });
             setTxHash(hash);
 

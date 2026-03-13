@@ -19,13 +19,19 @@ etherscan: {
 ## 2. Verify PayrollFactory
 Run the following command:
 ```bash
-npx hardhat verify --network sepolia <NEW_FACTORY_ADDRESS> 0x44cADD9F4f7Ee3c0cbAb26c553Ab454c856d4EDD 0x0017a67D86380C7cF6CC98Aa182936da4281C6BD
+npx hardhat verify --network sepolia <FACTORY_ADDRESS> 0x44cADD9F4f7Ee3c0cbAb26c553Ab454c856d4EDD 0x0017a67D86380C7cF6CC98Aa182936da4281C6BD
 ```
 
-## 3. Verify ConfidentialPayroll
-Run the command for each deployed instance:
+## 3. Verify PayrollNFT (each deployed instance — get address from PayrollCreated event)
+Run the following command:
 ```bash
-npx hardhat verify --network sepolia <PAYROLL_ADDRESS> <TOKEN_ADDRESS> <EMPLOYER_ADDRESS>
+npx hardhat verify --network sepolia <NFT_ADDRESS> <EMPLOYER_ADDRESS>
+```
+
+## 4. Verify ConfidentialPayroll (each deployed instance)
+Run the following command:
+```bash
+npx hardhat verify --network sepolia <PAYROLL_ADDRESS> 0x44cADD9F4f7Ee3c0cbAb26c553Ab454c856d4EDD <EMPLOYER_ADDRESS> <NFT_ADDRESS>
 ```
 
 ---

@@ -32,12 +32,14 @@ if (sepoliaUrl && (PRIVATE_KEY || MNEMONIC)) {
 
 const config: HardhatUserConfig = {
   solidity: {
-    version: "0.8.24",
+    version: "0.8.28",
     settings: {
       optimizer: {
         enabled: true,
         runs: 200,
       },
+      evmVersion: "cancun",
+      viaIR: true,
     },
   },
   namedAccounts: {

@@ -7,6 +7,7 @@ interface EmployeeListProps {
     isLoading: boolean;
     walletAddress: string;
     contractAddress: string;
+    nftAddress?: `0x${string}`;
 }
 
 export function EmployeeList({
@@ -15,7 +16,8 @@ export function EmployeeList({
     onRemove,
     isLoading,
     walletAddress,
-    contractAddress
+    contractAddress,
+    nftAddress
 }: EmployeeListProps) {
     const handleFire = async (address: string) => {
         try {
@@ -33,6 +35,7 @@ export function EmployeeList({
             onFire={handleFire}
             walletAddress={walletAddress}
             contractAddress={contractAddress}
+            nftAddress={nftAddress}
         />
     );
 }

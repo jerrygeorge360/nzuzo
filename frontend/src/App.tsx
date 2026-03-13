@@ -20,6 +20,7 @@ import { EmployeesView } from './views/EmployeesView';
 import { TransactionsView } from './views/TransactionsView';
 import { SettingsView } from './views/SettingsView';
 import { NotAuthorized } from './views/NotAuthorized';
+import { PayslipsView } from './views/PayslipsView';
 import { Loader2 } from 'lucide-react';
 
 function App() {
@@ -169,6 +170,7 @@ function App() {
           connect: () => { },
           disconnect: () => { }
         }}
+        isEmployer={isEmployer}
       />
 
       <main className="main-content">
@@ -204,6 +206,7 @@ function App() {
             isLoading={payroll.isLoadingEmployees}
             walletAddress={wallet.address || ''}
             contractAddress={contractAddress as `0x${string}`}
+            nftAddress={payroll.nftAddress}
             onAddClick={() => setIsAddModalOpen(true)}
             onRunPayroll={handleRunPayroll}
             payrollCooldown={payroll.payrollCooldown}
@@ -221,6 +224,10 @@ function App() {
             role={isEmployer ? 'Employer' : 'Employee'}
             contractAddress={contractAddress as `0x${string}`}
           />
+        )}
+
+        {activeTab === 'payslips' && payroll.nftAddress && (
+          <PayslipsView nftAddress={payroll.nftAddress} />
         )}
 
         <BalanceCard

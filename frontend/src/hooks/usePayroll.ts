@@ -35,6 +35,14 @@ export function usePayroll(contractAddress: `0x${string}`) {
     query: { enabled: !!contractAddress },
   });
 
+  // ── Read NFT address ──
+  const { data: nftAddress } = useReadContract({
+    address: contractAddress,
+    abi: PAYROLL_ABI,
+    functionName: 'nft',
+    query: { enabled: !!contractAddress },
+  });
+
   // ── Read Treasury Handle ──
   const { data: treasuryHandle, refetch: refetchTreasury } = useReadContract({
     address: contractAddress,
@@ -206,6 +214,7 @@ export function usePayroll(contractAddress: `0x${string}`) {
     // Data
     employer: employer as `0x${string}` | undefined,
     tokenAddress: tokenAddress as `0x${string}` | undefined,
+    nftAddress: nftAddress as `0x${string}` | undefined,
     employeeAddresses: (employeeAddresses || []) as string[],
     isLoadingEmployees,
     refetchEmployees,

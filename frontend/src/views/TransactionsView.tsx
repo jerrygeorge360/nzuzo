@@ -40,20 +40,20 @@ export function TransactionsView({ contractAddress }: TransactionsViewProps) {
 
     return (
         <div className="content-body" style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-            <div style={{ padding: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <h2 style={{ fontSize: '18px', fontWeight: 700, margin: 0 }}>On-chain History</h2>
-                <button
-                    className="reveal-btn"
-                    onClick={refresh}
-                    disabled={isLoading}
-                    style={{ background: 'var(--bg-elevated)', border: '1px solid var(--border-hairline)' }}
-                >
-                    <RefreshCw size={12} className={isLoading ? 'animate-spin' : ''} style={{ marginRight: '6px' }} />
-                    Refresh
-                </button>
-            </div>
+            <div className="table-container">
+                <div className="table-header-bar">
+                    <span className="table-title">On-chain History</span>
+                    <button
+                        className="reveal-btn"
+                        onClick={refresh}
+                        disabled={isLoading}
+                        style={{ background: 'var(--bg-elevated)', border: '1px solid var(--border-hairline)' }}
+                    >
+                        <RefreshCw size={12} className={isLoading ? 'animate-spin' : ''} style={{ marginRight: '6px' }} />
+                        Refresh
+                    </button>
+                </div>
 
-            <div className="table-container" style={{ flex: 1, overflow: 'auto' }}>
                 {events.length === 0 ? (
                     <div style={{ padding: '40px', textAlign: 'center', color: 'var(--text-tertiary)' }}>
                         No on-chain activity found
@@ -71,7 +71,7 @@ export function TransactionsView({ contractAddress }: TransactionsViewProps) {
                         </thead>
                         <tbody>
                             {events.map((event) => (
-                                <tr key={event.transactionHash}>
+                                <tr key={event.id}>
                                     <td>
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--text-primary)' }}>
                                             <span style={{ color: 'var(--accent)' }}>{getEventIcon(event.type)}</span>

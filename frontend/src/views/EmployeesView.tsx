@@ -8,6 +8,7 @@ interface EmployeesViewProps {
     isLoading: boolean;
     walletAddress: string;
     contractAddress: string;
+    nftAddress?: `0x${string}`;
     onAddClick: () => void;
     onRunPayroll: () => void;
     payrollCooldown?: bigint;
@@ -21,6 +22,7 @@ export function EmployeesView({
     isLoading,
     walletAddress,
     contractAddress,
+    nftAddress,
     onAddClick,
     onRunPayroll,
     payrollCooldown,
@@ -79,6 +81,7 @@ export function EmployeesView({
                 isLoading={isLoading}
                 walletAddress={walletAddress}
                 contractAddress={contractAddress}
+                nftAddress={nftAddress}
             />
         </div>
     );

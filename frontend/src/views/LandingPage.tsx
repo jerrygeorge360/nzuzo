@@ -51,10 +51,10 @@ export function LandingPage() {
                         topics: log.topics,
                     });
                     if (decoded.eventName === 'PayrollCreated') {
-                        const newOrgAddress = (decoded.args as any).payrollContract;
-                        if (newOrgAddress) {
+                        const { payrollContract } = decoded.args as any;
+                        if (payrollContract) {
                             setIsCreateModalOpen(false);
-                            navigate(`/org/${newOrgAddress}`);
+                            navigate(`/org/${payrollContract}`);
                         }
                     }
                 } catch (e) {
@@ -121,7 +121,7 @@ export function LandingPage() {
                             <div>
                                 <h3 style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '8px' }}>Sepolia ETH — required for gas fees</h3>
                                 <a
-                                    href="https://sepoliafaucet.com"
+                                    href="https://sepolia-faucet.pk910.de/"
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     className="reveal-btn"
@@ -175,7 +175,7 @@ export function LandingPage() {
     return (
         <div className="app-layout" style={{ padding: '40px', overflowY: 'auto' }}>
             <div className="lock-grid-bg" />
-            <div style={{ maxWidth: '1000px', margin: '0 auto', width: '100%', zIndex: 1 }}>
+            <div style={{ maxWidth: '1000px', margin: '0 auto', width: '100%', zIndex: 1, position: 'relative' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '48px' }}>
                     <div>
                         <h1 style={{ fontSize: '32px', fontWeight: 800, color: 'var(--text-primary)' }}>Welcome back</h1>
@@ -186,98 +186,96 @@ export function LandingPage() {
                         Create Organization
                     </button>
                 </div>
-            </div>
 
-            {/* Faucet Card for Connected State */}
-            <div style={{
-                padding: '32px',
-                border: '1px solid var(--border-hairline)',
-                borderRadius: 'var(--radius)',
-                background: 'var(--bg-elevated)',
-                marginBottom: '32px'
-            }}>
-                <h2 style={{ margin: '0 0 16px', fontSize: '18px', fontWeight: 700, color: 'var(--accent)', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <Coins size={20} /> Get Testnet Tokens
-                </h2>
-                <p style={{ color: 'var(--text-secondary)', fontSize: '14px', marginBottom: '24px' }}>
-                    To use Nzuzo Pay on Sepolia you need testnet tokens.
-                </p>
+                {/* Faucet Card for Connected State */}
+                <div style={{
+                    padding: '32px',
+                    border: '1px solid var(--border-hairline)',
+                    borderRadius: 'var(--radius)',
+                    background: 'var(--bg-elevated)',
+                    marginBottom: '32px'
+                }}>
+                    <h2 style={{ margin: '0 0 16px', fontSize: '18px', fontWeight: 700, color: 'var(--accent)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <Coins size={20} /> Get Testnet Tokens
+                    </h2>
+                    <p style={{ color: 'var(--text-secondary)', fontSize: '14px', marginBottom: '24px' }}>
+                        To use Nzuzo Pay on Sepolia you need testnet tokens.
+                    </p>
 
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
-                    <div>
-                        <h3 style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '8px' }}>Sepolia ETH — required for gas fees</h3>
-                        <a
-                            href="https://sepoliafaucet.com"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="reveal-btn"
-                            style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', textDecoration: 'none', height: '36px' }}
-                        >
-                            Get Sepolia ETH <ExternalLink size={14} />
-                        </a>
-                    </div>
-
-                    <div>
-                        <h3 style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '8px' }}>mUSDC — required to fund your payroll treasury</h3>
-                        <div title={!isConnected ? "Connect wallet first" : ""}>
-                            <button
-                                className="send-action-btn"
-                                onClick={() => address && requestMUSDC(address)}
-                                disabled={!isConnected || isFaucetLoading}
-                                style={{ height: '36px', opacity: !isConnected ? 0.5 : 1 }}
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '32px' }}>
+                        <div>
+                            <h3 style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '8px' }}>Sepolia ETH — required for gas fees</h3>
+                            <a
+                                href="https://sepolia-faucet.pk910.de/"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="reveal-btn"
+                                style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', textDecoration: 'none', height: '36px' }}
                             >
-                                {isFaucetLoading ? 'Requesting...' : faucetStatus === 'success' ? '✅ 10,000 sent' : faucetStatus === 'error' ? '❌ Request failed' : 'Request mUSDC'}
-                            </button>
-                            {faucetMessage && <p style={{ fontSize: '11px', marginTop: '4px', color: faucetStatus === 'success' ? 'var(--accent)' : 'var(--status-danger)' }}>{faucetMessage}</p>}
+                                Get Sepolia ETH <ExternalLink size={14} />
+                            </a>
+                        </div>
+
+                        <div>
+                            <h3 style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '8px' }}>mUSDC — required to fund your payroll treasury</h3>
+                            <div title={!isConnected ? "Connect wallet first" : ""}>
+                                <button
+                                    className="send-action-btn"
+                                    onClick={() => address && requestMUSDC(address)}
+                                    disabled={!isConnected || isFaucetLoading}
+                                    style={{ height: '36px', width: '100%', justifyContent: 'center', opacity: !isConnected ? 0.5 : 1 }}
+                                >
+                                    {isFaucetLoading ? 'Requesting...' : faucetStatus === 'success' ? '✅ 10,000 sent' : faucetStatus === 'error' ? '❌ Request failed' : 'Request mUSDC'}
+                                </button>
+                                {faucetMessage && <p style={{ fontSize: '11px', marginTop: '4px', textAlign: 'center', color: faucetStatus === 'success' ? 'var(--accent)' : 'var(--status-danger)' }}>{faucetMessage}</p>}
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '32px', marginBottom: '64px' }}>
-                {/* Join Instructions Card */}
-                <div style={{
-                    padding: '32px',
-                    border: '1px solid var(--border-hairline)',
-                    borderRadius: 'var(--radius)',
-                    background: 'var(--bg-elevated)',
-                    display: 'flex',
-                    gap: '20px',
-                    alignItems: 'flex-start'
-                }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '32px', marginBottom: '64px' }}>
+                    {/* Join Instructions Card */}
                     <div style={{
-                        width: '48px',
-                        height: '48px',
-                        background: 'var(--accent-dim)',
-                        color: 'var(--accent)',
-                        borderRadius: '12px',
+                        padding: '32px',
+                        border: '1px solid var(--border-hairline)',
+                        borderRadius: 'var(--radius)',
+                        background: 'var(--bg-elevated)',
                         display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        flexShrink: 0
+                        flexDirection: 'column',
+                        gap: '20px',
+                        alignItems: 'flex-start'
                     }}>
-                        <ShieldCheck size={24} />
+                        <div style={{
+                            width: '48px',
+                            height: '48px',
+                            background: 'var(--accent-dim)',
+                            color: 'var(--accent)',
+                            borderRadius: '12px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            flexShrink: 0
+                        }}>
+                            <ShieldCheck size={24} />
+                        </div>
+                        <div>
+                            <h2 style={{ margin: '0 0 8px', fontSize: '16px', fontWeight: 700, color: 'var(--text-primary)' }}>Join Organization</h2>
+                            <p style={{ margin: 0, color: 'var(--text-secondary)', fontSize: '13px', lineHeight: 1.6 }}>
+                                Ask your organization admin to share their private invite link to get started as an employee or partner.
+                            </p>
+                        </div>
                     </div>
-                    <div>
-                        <h2 style={{ margin: '0 0 8px', fontSize: '16px', fontWeight: 700, color: 'var(--text-primary)' }}>Join Organization</h2>
-                        <p style={{ margin: 0, color: 'var(--text-secondary)', fontSize: '13px', lineHeight: 1.6 }}>
-                            Ask your organization admin to share their private invite link to get started as an employee or partner.
-                        </p>
-                    </div>
-                </div>
 
-                {/* Direct Access Card */}
-                <div style={{
-                    padding: '32px',
-                    border: '1px solid var(--border-hairline)',
-                    borderRadius: 'var(--radius)',
-                    background: 'var(--bg-elevated)',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    justifyContent: 'center',
-                    gap: '20px'
-                }}>
-                    <div style={{ display: 'flex', gap: '20px', alignItems: 'flex-start' }}>
+                    {/* Direct Access Card */}
+                    <div style={{
+                        padding: '32px',
+                        border: '1px solid var(--border-hairline)',
+                        borderRadius: 'var(--radius)',
+                        background: 'var(--bg-elevated)',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: '20px'
+                    }}>
                         <div style={{
                             width: '48px',
                             height: '48px',
@@ -291,7 +289,7 @@ export function LandingPage() {
                         }}>
                             <Hash size={24} />
                         </div>
-                        <div style={{ flex: 1 }}>
+                        <div style={{ flex: 1, width: '100%' }}>
                             <h2 style={{ margin: '0 0 4px', fontSize: '16px', fontWeight: 700, color: 'var(--text-primary)' }}>Direct Access</h2>
                             <p style={{ margin: '0 0 16px', color: 'var(--text-tertiary)', fontSize: '12px' }}>Enter the contract address manually</p>
                             <div style={{ display: 'flex', gap: '8px' }}>
@@ -299,7 +297,7 @@ export function LandingPage() {
                                     type="text"
                                     placeholder="0x..."
                                     className="terminal-input"
-                                    style={{ height: '40px' }}
+                                    style={{ height: '40px', flex: 1 }}
                                     value={manualUrl}
                                     onChange={(e) => setManualUrl(e.target.value)}
                                     disabled={isJoining}

@@ -1,134 +1,57 @@
-# Nzuzo Pay
+# Nzuzo Pay: Confidential On-Chain Payroll
 
-> On-chain payroll where salary data stays encrypted — even during execution. Now with multi-tenant organization support.
+![Sepolia](https://img.shields.io/badge/Network-Sepolia-blue)
+![Solidity](https://img.shields.io/badge/Solidity-^0.8.28-black)
+![fhEVM](https://img.shields.io/badge/FHE-fhEVM_v0.9-green)
+![License](https://img.shields.io/badge/License-MIT-yellow)
 
-Nzuzo Pay is a confidential payroll system built on [Zama's fhEVM](https://github.com/zama-ai/fhevm). It allows any company to deploy their own privacy-first payroll contract via a central factory. Salaries are stored and processed as Fully Homomorphic Encryption (FHE) ciphertexts, ensuring total confidentiality on the public ledger.
-
----
-
-## The Problem
-
-Every token transfer on a public blockchain is visible to anyone. In a standard on-chain payroll system, employee salaries are permanently readable. 
-
-Nzuzo Pay solves this by using FHE to keep amounts encrypted at rest and during execution, while our **Multi-tenant Factory** allows individual organizations to manage their own isolated rosters under a scalable architecture.
+**[v] Private pay. [v] Public trust. [v] Secured by math.**
 
 ---
 
-## How It Works
+## >_ The Problem
+On public blockchains, transparency is a double-edged sword. Every existing payroll solution (Superfluid, Sablier, Request Network) makes salary data a public record. For workers, this creates targeting risks; for organizations, it creates internal politics and talent poaching. **Nzuzo Pay** is the first payroll system where salary privacy is cryptographicaly guaranteed by mathematics, not trust.
 
-1.  **The Factory Controller**: A central `PayrollFactory.sol` manages the deployment of individual organization contracts.
-2.  **Isolated Organizations**: Each employer deploys a `ConfidentialPayroll` instance. Data (rosters, salaries, treasury) is strictly isolated between contracts.
-3.  **Encrypted Execution**: Zama's fhEVM performs computations on encrypted integers (`euint64`). The Zama network handles the FHE operations off-chain and posts results back to Sepolia.
+## :: How It Works
+Nzuzo Pay uses **Fully Homomorphic Encryption (FHE)** via the **fhEVM**. 
+1. **Encrypted at Rest**: Employee salaries are stored as encrypted `euint64` values.
+2. **Confidential Computation**: Batch payroll and bonus logic are performed entirely on encrypted data—the smart contract pays out the correct amounts without ever "seeing" the cleartext figures.
+3. **FHE Access Control**: Only authorized wallets (Employer/Employee) can request decryption handles for their specific data.
 
----
+## ++ Features
+- **Multi-Tenant Factory**: Employers deploy isolated, private payroll organizations for a 0.01 ETH fee.
+- **Role-Based Dashboard**: Native support for Employer and Employee views with prioritizing logic.
+- **Full Employee Management**: Add, update salary, or remove employees with FHE-secured access control.
+- **Automated Payroll**: Run batch payroll for up to 100 employees in one atomic transaction.
+- **Soulbound Payslip NFTs**: Auto-minted on every payment with on-chain SVG metadata. Amounts are always blurred: "████████ Private".
+- **Treasury Management**: View confidential treasury health and fund the contract payroll pool.
+- **Transaction History**: Real-time monitoring of the last 10 blocks for recent organizational activity.
 
-## Features
+## ⚡ Tech Stack
+| Component | Technology |
+| :--- | :--- |
+| **Smart Contracts** | Solidity ^0.8.28, @fhevm/solidity v0.9 |
+| **Frontend** | React, Vite, TypeScript |
+| **Blockchain Interaction** | wagmi, viem, @zama-fhe/relayer-sdk |
+| **Security/Standards** | OpenZeppelin (ERC721, ReentrancyGuard, Base64) |
+| **Development** | Hardhat, Etherscan API |
 
-| Feature | Description |
-|---|---|
-| **Multi-tenant Factory** | Deploy isolated payroll contracts for different organizations via a central hub |
-| **Encrypted Salaries** | Salaries stored as `euint64` — private on-chain at rest |
-| **Employer Discovery** | Automated organization discovery via blockchain event logs |
-| **Invite Flow** | Built-in onboarding via secure Invite Links and QR codes |
-| **One-transaction Payroll** | Single `runPayroll()` call to distribute all encrypted salaries |
-| **FHE Access Control** | Per-address ACL via `FHE.allow()` — employer and employee only |
-| **Confidential Treasury** | Encrypted treasury balance visible only to the authorized employer |
-
----
-
-## Tech Stack
-
-| Layer | Technology |
-|---|---|
-| Smart Contracts | Solidity `^0.8.24` |
-| FHE Library | `@fhevm/solidity` v0.9 (`FHE.sol`) |
-| Token Standard | `fhevm-contracts` Confidential ERC20 |
-| Frontend | React + Vite + TypeScript (React Router) |
-| Blockchain Interaction | `wagmi`, `viem` |
-| FHE Client SDK | `@zama-fhe/relayer-sdk` |
-| Dev Environment | Hardhat + `hardhat-deploy` |
-
----
-
-## Project Structure
-
-```bash
-nzuzo/
-├── contracts/
-│   ├── PayrollFactory.sol        # Factory for multi-tenant deployments
-│   ├── ConfidentialPayroll.sol   # Core isolated payroll logic
-│   └── MockUSDC.sol              # Confidential ERC20 token
-├── frontend/                     # Multi-tenant React Application
-│   └── src/
-│       ├── views/                # LandingPage, Dashboard, Settings, etc.
-│       ├── hooks/                # usePayroll, useToken, useFhevm
-│       └── main.tsx              # Router configuration
-├── deploy/                       # Hardhat deployment scripts
-└── tasks/                        # Utility tasks
-```
-
----
-
-## Getting Started
-
-### Prerequisites
-
-- Node.js v20+
-- Sepolia RPC URL (Alchemy/Infura)
-- Sepolia ETH for deployment fees (0.01 ETH per Org)
-
-### Installation
-
-```bash
-# Install core dependencies
-npm install
-
-# Install frontend dependencies
-cd frontend && npm install && cd ..
-```
-
-### Configuration
-
-Create a root `.env`:
-```env
-SEPOLIA_RPC_URL=...
-PRIVATE_KEY=...
-```
-
-Create `frontend/.env`:
-```env
-VITE_FACTORY_ADDRESS=0x...
-VITE_TOKEN_ADDRESS=0x...
-```
-
-### Deployment
-
-```bash
-# Deploy Factory & Token to Sepolia
-npx hardhat deploy --network sepolia
-```
-
-This will output your `PayrollFactory` address. Add it to the frontend `.env`.
-
-### Run Frontend
-
-```bash
-npm run frontend:dev
-```
-
-Open [http://localhost:5173](http://localhost:5173). Connect your wallet to the **Landing Page** to create your first organization.
-
----
-
-## Live Deployments (Sepolia)
-
+## // Live Deployments (Sepolia)
 | Contract | Address |
-|---|---|
-| PayrollFactory | `0xF6C62e2F2505cEAA4De1ba2732b96db52c3eA004` |
-| MockUSDC (mUSDC) | `0x44cADD9F4f7Ee3c0cbAb26c553Ab454c856d4EDD` |
+| :--- | :--- |
+| **PayrollFactory v2** | [`0xb600CBE97e6953E5DACE4a6EAA83f29157Ff8d5b`](https://sepolia.etherscan.io/address/0xb600CBE97e6953E5DACE4a6EAA83f29157Ff8d5b#code) |
+| **MockUSDC** | [`0x44cADD9F4f7Ee3c0cbAb26c553Ab454c856d4EDD`](https://sepolia.etherscan.io/address/0x44cADD9F4f7Ee3c0cbAb26c553Ab454c856d4EDD#code) |
 
----
+## !! Encryption Model
+Nzuzo Pay implements a zero-knowledge trust model at the smart contract layer:
+- **Employer Access**: Can update salaries and run payroll. Can decrypt treasury balance.
+- **Employee Access**: Can decrypt only their own salary handle and view their personal payslip gallery.
+- **Public**: Can see that a payroll event occurred, but cannot see amounts, specific employee rosters, or treasury totals.
 
-## License
+## >> Roadmap
+- **Employment Verification Portal**: Use FHE to prove income thresholds (e.g., "earns > $3k") without revealing the exact salary.
+- **Confidential USDC Wrapper**: Lock cleartext USDC to mint encrypted cUSDC for mainnet use.
+- **DAO Governance**: Multisig-gated payroll execution for decentralized organizations.
 
-MIT. See [`LICENSE`](./LICENSE) for details.
+## 📜 License
+Internal hackathon project released under the [MIT License](LICENSE).

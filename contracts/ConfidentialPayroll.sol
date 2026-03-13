@@ -5,10 +5,12 @@ import "@fhevm/solidity/lib/FHE.sol";
 import "@fhevm/solidity/config/ZamaConfig.sol";
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import "./IConfidentialERC20.sol";
+import "./IPayrollNFT.sol";
 
 contract ConfidentialPayroll is ZamaEthereumConfig, ReentrancyGuard {
     address public employer;
     IConfidentialERC20 public token;
+    IPayrollNFT public nft;
 
     mapping(address => euint64) private salaries;
     mapping(address => bool) public isEmployee;
@@ -32,9 +34,10 @@ contract ConfidentialPayroll is ZamaEthereumConfig, ReentrancyGuard {
         _;
     }
 
-    constructor(address tokenAddress, address _employer) {
+    constructor(address tokenAddress, address _employer, address _nftContract) {
         employer = _employer;
         token = IConfidentialERC20(tokenAddress);
+        nft = IPayrollNFT(_nftContract);
     }
 
     function addEmployee(
@@ -100,6 +103,7 @@ contract ConfidentialPayroll is ZamaEthereumConfig, ReentrancyGuard {
         FHE.allowTransient(bonus, address(token));
 
         token.transfer(employee, bonus);
+        nft.mintBonus(employee, block.timestamp, memo);
         emit BonusPaid(employee, block.timestamp, memo);
     }
 
@@ -123,6 +127,7 @@ contract ConfidentialPayroll is ZamaEthereumConfig, ReentrancyGuard {
             address emp = employees[i];
             FHE.allowTransient(salaries[emp], address(token));
             token.transfer(emp, salaries[emp]);
+            nft.mintPayslip(emp, block.timestamp, payrollCooldown);
         }
         emit PayrollRun(block.timestamp, count);
     }

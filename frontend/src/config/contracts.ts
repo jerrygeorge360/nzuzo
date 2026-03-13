@@ -19,6 +19,7 @@ export const FACTORY_ABI = [
         inputs: [
             { indexed: true, internalType: 'address', name: 'employer', type: 'address' },
             { indexed: true, internalType: 'address', name: 'payrollContract', type: 'address' },
+            { indexed: true, internalType: 'address', name: 'nftContract', type: 'address' },
         ],
         name: 'PayrollCreated',
         type: 'event',
@@ -26,7 +27,10 @@ export const FACTORY_ABI = [
     {
         inputs: [],
         name: 'createPayroll',
-        outputs: [{ internalType: 'address', name: '', type: 'address' }],
+        outputs: [
+            { internalType: 'address', name: '', type: 'address' },
+            { internalType: 'address', name: '', type: 'address' },
+        ],
         stateMutability: 'payable',
         type: 'function',
     },
@@ -236,6 +240,44 @@ export const PAYROLL_ABI = [
         name: 'syncTreasuryAllowance',
         outputs: [],
         stateMutability: 'nonpayable',
+        type: 'function',
+    },
+    {
+        inputs: [],
+        name: 'nft',
+        outputs: [{ internalType: 'address', name: '', type: 'address' }],
+        stateMutability: 'view',
+        type: 'function',
+    },
+] as const;
+
+// ── PayrollNFT ABI ──
+export const NFT_ABI = [
+    {
+        inputs: [{ internalType: 'address', name: 'employee', type: 'address' }],
+        name: 'getPayslipsByEmployee',
+        outputs: [{ internalType: 'uint256[]', name: '', type: 'uint256[]' }],
+        stateMutability: 'view',
+        type: 'function',
+    },
+    {
+        inputs: [{ internalType: 'uint256', name: 'tokenId', type: 'uint256' }],
+        name: 'payslips',
+        outputs: [
+            {
+                components: [
+                    { internalType: 'address', name: 'employee', type: 'address' },
+                    { internalType: 'uint256', name: 'payrollDate', type: 'uint256' },
+                    { internalType: 'uint256', name: 'payPeriod', type: 'uint256' },
+                    { internalType: 'uint8', name: 'payslipType', type: 'uint8' },
+                    { internalType: 'string', name: 'memo', type: 'string' },
+                ],
+                internalType: 'struct PayrollNFT.PayslipData',
+                name: '',
+                type: 'tuple',
+            },
+        ],
+        stateMutability: 'view',
         type: 'function',
     },
 ] as const;
