@@ -1,0 +1,17 @@
+services:
+
+  nzuzo-frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        VITE_FACTORY_ADDRESS: ${VITE_FACTORY_ADDRESS}
+        VITE_TOKEN_ADDRESS: ${VITE_TOKEN_ADDRESS}
+        VITE_INFURA_RPC_URL: ${VITE_INFURA_RPC_URL}
+        VITE_FAUCET_URL: ${VITE_FAUCET_URL}
+    container_name: nzuzo-app
+    restart: always
+    ports:
+      - "8082:80"
+    env_file:
+      - ./.env

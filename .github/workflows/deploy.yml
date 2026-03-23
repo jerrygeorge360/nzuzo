@@ -1,0 +1,41 @@
+name: Deploy Nzuzo
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: beta
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Deploy to Azure VM
+        uses: appleboy/ssh-action@master
+        with:
+          host:     ${{ secrets.AZURE_VM_HOST }}
+          username: ${{ secrets.AZURE_VM_USER }}
+          key:      ${{ secrets.AZURE_VM_SSH_KEY }}
+          port:     22
+          script: |
+            set -e
+
+            # Clone or update the Nzuzo repository
+            cd ~/nzuzo || git clone https://${{ secrets.GH_TOKEN }}:x-oauth-basic@github.com/jerrygeorge360/nzuzo.git ~/nzuzo && cd ~/nzuzo
+            git pull origin main
+
+            # Write the root .env securely from GitHub actions
+            cat > .env << "ENVEOF"
+            VITE_FACTORY_ADDRESS=${{ secrets.VITE_FACTORY_ADDRESS }}
+            VITE_TOKEN_ADDRESS=${{ secrets.VITE_TOKEN_ADDRESS }}
+            VITE_INFURA_RPC_URL=${{ secrets.VITE_INFURA_RPC_URL }}
+            VITE_FAUCET_URL=${{ secrets.VITE_FAUCET_URL }}
+            ENVEOF
+
+            # Restart the container
+            docker compose up --build -d
+
+            echo "✅ Nzuzo Deployment complete!"
