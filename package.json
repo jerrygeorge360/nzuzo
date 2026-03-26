@@ -23,6 +23,8 @@
     "@fhevm/solidity": "^0.11.1",
     "dotenv": "^16.4.7",
     "ethers": "^6.13.5",
-    "fhevm-contracts": "^0.2.4"
+    "fhevm-contracts": "^0.2.4",
+    "framer-motion": "^12.38.0",
+    "motion": "^12.38.0"
   }
 }
