@@ -33,6 +33,8 @@ jobs:
             VITE_TOKEN_ADDRESS=${{ secrets.VITE_TOKEN_ADDRESS }}
             VITE_INFURA_RPC_URL=${{ secrets.VITE_INFURA_RPC_URL }}
             VITE_FAUCET_URL=/faucet/request
+            PRIVATE_KEY=${{ secrets.PRIVATE_KEY }}
+            SEPOLIA_RPC_URL=${{ secrets.SEPOLIA_RPC_URL }}
             ENVEOF
 
             # Restart the container
