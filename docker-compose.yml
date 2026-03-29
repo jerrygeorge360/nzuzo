@@ -1,5 +1,4 @@
 services:
-
   nzuzo-frontend:
     build:
       context: ./frontend
@@ -15,3 +14,25 @@ services:
       - "8082:80"
     env_file:
       - ./.env
+    networks:
+      - nzuzo-network
+
+  nzuzo-faucet:
+    build:
+      context: ./faucet
+      dockerfile: Dockerfile
+    container_name: nzuzo-faucet
+    restart: always
+    ports:
+      - "${FAUCET_PORT:-3001}:3001"
+    environment:
+      - SEPOLIA_RPC_URL=${SEPOLIA_RPC_URL}
+      - PRIVATE_KEY=${PRIVATE_KEY}
+    env_file:
+      - ./.env
+    networks:
+      - nzuzo-network
+
+networks:
+  nzuzo-network:
+    driver: bridge

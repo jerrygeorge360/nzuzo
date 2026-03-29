@@ -32,7 +32,7 @@ jobs:
             VITE_FACTORY_ADDRESS=${{ secrets.VITE_FACTORY_ADDRESS }}
             VITE_TOKEN_ADDRESS=${{ secrets.VITE_TOKEN_ADDRESS }}
             VITE_INFURA_RPC_URL=${{ secrets.VITE_INFURA_RPC_URL }}
-            VITE_FAUCET_URL=${{ secrets.VITE_FAUCET_URL }}
+            VITE_FAUCET_URL=/faucet/request
             ENVEOF
 
             # Restart the container

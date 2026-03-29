@@ -387,7 +387,7 @@ if (!isConnected) {
                 gap: "8px",
               }}
             >
-              <Coins size={20} /> Get Testnet Tokens
+              <Coins size={20} /> Mint Testnet Tokens
             </h2>
             <p
               style={{
@@ -458,12 +458,12 @@ if (!isConnected) {
                     }}
                   >
                     {isFaucetLoading
-                      ? "Requesting..."
+                      ? "Minting..."
                       : faucetStatus === "success"
-                      ? "✅ 10,000 sent"
+                      ? "✅ 10,000 minted"
                       : faucetStatus === "error"
-                      ? "❌ Request failed"
-                      : "Request mUSDC"}
+                      ? "❌ Mint failed"
+                      : "Mint mUSDC"}
                   </button>
                   {faucetMessage && (
                     <p
@@ -601,7 +601,7 @@ if (!isConnected) {
               gap: "8px",
             }}
           >
-            <Coins size={20} /> Get Testnet Tokens
+            <Coins size={20} /> Mint Testnet Tokens
           </h2>
           <p
             style={{
@@ -672,12 +672,12 @@ if (!isConnected) {
                   }}
                 >
                   {isFaucetLoading
-                    ? "Requesting..."
+                    ? "Minting..."
                     : faucetStatus === "success"
-                    ? "✅ 10,000 sent"
+                    ? "✅ 10,000 minted"
                     : faucetStatus === "error"
-                    ? "❌ Request failed"
-                    : "Request mUSDC"}
+                    ? "❌ Mint failed"
+                    : "Mint mUSDC"}
                 </button>
                 {faucetMessage && (
                   <p

@@ -99,7 +99,7 @@ export function DashboardView({
                             textDecoration: 'underline'
                         }}
                     >
-                        {isFaucetLoading ? 'Requesting...' : faucetStatus === 'success' ? '✅ Sent' : 'Need mUSDC? → Request from our faucet'}
+                            {isFaucetLoading ? 'Minting...' : faucetStatus === 'success' ? '✅ Minted' : 'Need mUSDC? → Mint tokens'}
                     </button>
                 </div>
             )}

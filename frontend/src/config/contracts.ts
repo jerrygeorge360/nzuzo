@@ -285,6 +285,16 @@ export const NFT_ABI = [
 // ── MockUSDC ABI ──
 export const TOKEN_ABI = [
     {
+        inputs: [
+            { internalType: 'address', name: 'to', type: 'address' },
+            { internalType: 'uint64', name: 'amount', type: 'uint64' },
+        ],
+        name: 'mint',
+        outputs: [],
+        stateMutability: 'nonpayable',
+        type: 'function',
+    },
+    {
         inputs: [{ internalType: 'address', name: 'account', type: 'address' }],
         name: 'balanceOf',
         outputs: [{ internalType: 'euint64', name: '', type: 'uint256' }],

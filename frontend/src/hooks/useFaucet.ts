@@ -13,7 +13,13 @@ export function useFaucet() {
         setMessage('');
 
         try {
-            const response = await fetch(import.meta.env.VITE_FAUCET_URL, {
+            console.log('[useFaucet] Requesting 10,000 mUSDC for:', address);
+            
+            // Integrated faucet URL. In development hooks this might be http://localhost:3001/request,
+            // but in the Docker Compose production setup it is proxied via /faucet/request
+            const faucetUrl = import.meta.env.VITE_FAUCET_URL || '/faucet/request';
+            
+            const response = await fetch(faucetUrl, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -22,16 +28,20 @@ export function useFaucet() {
             });
 
             if (response.ok) {
+                const data = await response.json();
+                console.log('[useFaucet] Success! TX:', data.txHash);
                 setStatus('success');
-                setMessage('✅ 10,000 mUSDC sent to your wallet');
+                setMessage('✅ 10,000 mUSDC sent to your wallet from the faucet service');
             } else {
+                const err = await response.json();
+                console.error('[useFaucet] Request failed:', err.error);
                 setStatus('error');
-                setMessage('❌ Request failed. You may have already claimed today.');
+                setMessage(`❌ Request failed: ${err.error || 'System error'}`);
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error('[useFaucet] Request failed:', error);
             setStatus('error');
-            setMessage('❌ Request failed. Please try again later.');
+            setMessage('❌ Request failed. Ensure the faucet service is running.');
         } finally {
             setIsLoading(false);
 
