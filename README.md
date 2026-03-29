@@ -101,101 +101,16 @@ Decryption handles are role-gated inside the smart contract. The employer can de
 
 ### System Overview
 
-```mermaid
-graph TD
-    Employer["Employer Wallet (MetaMask / Sepolia)"]
-    Employee["Employee Wallet (MetaMask / Sepolia)"]
-    Frontend["React Frontend — Vite + TypeScript — nzuzo.prodigal.sbs"]
-    Sepolia["Ethereum Sepolia Testnet"]
-    Relayer["@zama-fhe/relayer-sdk"]
-
-    Employer -->|wagmi + viem| Frontend
-    Employee -->|wagmi + viem| Frontend
-    Frontend -->|encrypt salary input| Relayer
-    Frontend -->|EVM JSON-RPC via Alchemy| Sepolia
-
-    subgraph Contracts ["Smart Contract Layer"]
-        Factory["PayrollFactory v2 — 0xb600CB...ff8d5b"]
-        Org["PayrollOrganization — isolated per employer"]
-        TFHE["TFHE fhEVM Coprocessor — @fhevm/solidity v0.11.1"]
-        Store["euint64 encryptedSalary — ciphertext only, never plaintext"]
-        NFT["Soulbound Payslip NFT — ERC-721 + on-chain SVG"]
-        USDC["MockUSDC — 0x44cADD9F...6d4EDD"]
-
-        Factory -->|deploy per employer| Org
-        Org --> TFHE
-        TFHE --> Store
-        Org --> NFT
-        Org --> USDC
-    end
-
-    subgraph KMS ["Zama Key Management"]
-        ZamaKMS["Zama KMS — Multi-Party Computation"]
-    end
-
-    Sepolia --> Factory
-    Relayer -->|einput + ZK proof| Org
-    TFHE <-->|MPC computation| ZamaKMS
-    ZamaKMS -->|employer decrypt handle| Employer
-    ZamaKMS -->|employee own handle only| Employee
-```
+![System Overview](./assets/Confidential%20payroll%20system%20on%20Sepolia%20Testnet.png)
 
 ### Payroll Execution Sequence
 
-```mermaid
-sequenceDiagram
-    participant E as Employer
-    participant R as Relayer SDK
-    participant C as PayrollOrganization Contract
-    participant FHE as fhEVM Coprocessor
-    participant W as Employee Wallet
+![Payroll Execution Sequence](./assets/Payroll%20execution%20flow%20with%20blockchain%20and%20encryption.png)
 
-    E->>R: encrypt(salary = 4500 USDC)
-    R-->>E: einput ciphertext + ZK proof
-    E->>C: addEmployee(address, einput, proof)
-    C->>FHE: TFHE.asEuint64(einput, proof)
-    FHE-->>C: euint64 encryptedSalary (stored — never cleartext)
 
-    E->>C: runBatchPayroll()
-    loop For each employee (up to 100)
-        C->>FHE: arithmetic on euint64
-        FHE-->>C: compute transfer amount (encrypted throughout)
-        C->>W: transfer USDC (correct amount, no cleartext exposed)
-        C->>W: mint Soulbound Payslip NFT\n(SVG: amounts shown as ████████ Private)
-    end
+### FHE Access Control and Multi-Tenant Factory
 
-    W->>C: requestSalaryDecrypt()
-    C->>FHE: TFHE.allow(handle, employeeAddress)
-    FHE->>KMS: decrypt(handle) — only for authorized wallet
-    KMS-->>W: plaintext 4500 (employee only — nobody else)
-```
-
-### FHE Access Control Tiers
-
-```mermaid
-flowchart LR
-    CT["euint64\n(on-chain ciphertext)"] --> Q{Who requests\ndecryption?}
-    Q --> A["🏢 Employer"]
-    Q --> B["👤 Employee\n(own record only)"]
-    Q --> C["🌐 Public / Anyone"]
-
-    A --> A1["✅ Treasury balance\n✅ All salary handles\n✅ Full payroll history"]
-    B --> B1["✅ Own salary handle\n✅ Own payslip NFT\n❌ Cannot see other employees"]
-    C --> C1["❌ No salary amounts\n❌ No employee roster\n✅ Payroll event occurred\n✅ NFT exists (amounts redacted)"]
-```
-
-### Multi-Tenant Factory
-
-```mermaid
-graph LR
-    Any["Any Employer\n(pays 0.01 ETH fee)"] -->|createOrganization| Factory["PayrollFactory v2\n0xb600CB..."]
-    Factory --> O1["Org A\n(isolated storage)"]
-    Factory --> O2["Org B\n(isolated storage)"]
-    Factory --> O3["Org C\n(isolated storage)"]
-    O1 --> E1["Employees A\neuint64 salaries"]
-    O2 --> E2["Employees B\neuint64 salaries"]
-    O3 --> E3["Employees C\neuint64 salaries"]
-```
+![FHE Access Control and Multi-Tenant Factory](./assets/FHE%20access%20control%20and%20payroll%20diagram.png)
 
 ---
 
