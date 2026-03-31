@@ -153,22 +153,40 @@ export function PayslipsView({ nftAddress }: PayslipsViewProps) {
                                 <Lock size={14} />
                                 Private 🔒
                             </div>
-                            <a
-                                href={`https://testnet.rarible.com/token/${nftAddress}:${id.toString()}`}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                style={{
-                                    fontSize: '13px',
-                                    color: 'var(--accent)',
-                                    textDecoration: 'none',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: '6px',
-                                    fontWeight: 500
-                                }}
-                            >
-                                View on Rarible <ExternalLink size={14} />
-                            </a>
+                            <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
+                                <a
+                                    href={`https://sepolia.etherscan.io/nft/${nftAddress}/${id.toString()}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    style={{
+                                        fontSize: '13px',
+                                        color: 'var(--accent)',
+                                        textDecoration: 'none',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '6px',
+                                        fontWeight: 500
+                                    }}
+                                >
+                                    Etherscan <ExternalLink size={14} />
+                                </a>
+                                <a
+                                    href={`https://testnet.rarible.com/token/${nftAddress}:${id.toString()}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    style={{
+                                        fontSize: '13px',
+                                        color: 'var(--accent)',
+                                        textDecoration: 'none',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '6px',
+                                        fontWeight: 500
+                                    }}
+                                >
+                                    Rarible <ExternalLink size={14} />
+                                </a>
+                            </div>
                         </div>
                     </div>
                 );

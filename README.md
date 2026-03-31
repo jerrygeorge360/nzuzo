@@ -11,10 +11,6 @@
 
 ---
 
-<!-- BANNER IMAGE PLACEHOLDER -->
-<!-- Replace with: ![Nzuzo Pay Banner](./assets/banner.png) -->
-> 📸 _[Banner image placeholder — add a 1200×630 hero image here]_
-
 **Live Demo:** [nzuzo.prodigal.sbs](https://nzuzo.prodigal.sbs/)
 
 ---
@@ -80,18 +76,13 @@ Decryption handles are role-gated inside the smart contract. The employer can de
 
 ## Demo
 
-<!-- DEMO VIDEO PLACEHOLDER -->
-<!-- Replace with: [![Watch Demo](./assets/demo-thumbnail.png)](https://youtube.com/your-demo-link) -->
-> 🎬 _[Demo video placeholder — embed your YouTube demo link here]_  
-> `[![Watch the Demo](https://img.youtube.com/vi/YOUR_VIDEO_ID/maxresdefault.jpg)](https://youtube.com/watch?v=YOUR_VIDEO_ID)`
+[![Watch the Demo](https://img.youtube.com/vi/yyCvrN1HFUM/maxresdefault.jpg)](https://youtu.be/yyCvrN1HFUM)
 
-<!-- EMPLOYER DASHBOARD SCREENSHOT PLACEHOLDER -->
-<!-- Replace with: ![Employer Dashboard](./assets/screenshot-employer.png) -->
-> 📸 _[Employer dashboard screenshot placeholder]_
+## Employer Dashboard
+![Employer Dashboard](./assets/employerdashboard.png)
 
-<!-- PAYSLIP NFT SCREENSHOT PLACEHOLDER -->
-<!-- Replace with: ![Payslip NFT Gallery](./assets/screenshot-payslip.png) -->
-> 📸 _[Soulbound payslip NFT gallery screenshot placeholder]_
+## Soulbound Payslip NFT Gallery
+![Payslip NFT Gallery](./assets/soulbound.png)
 
 **Live App:** [nzuzo.prodigal.sbs](https://nzuzo.prodigal.sbs/)
 
