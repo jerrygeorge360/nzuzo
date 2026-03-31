@@ -76,7 +76,7 @@ Decryption handles are role-gated inside the smart contract. The employer can de
 
 ## Demo
 
-[![Watch the Demo](https://img.youtube.com/vi/yyCvrN1HFUM/maxresdefault.jpg)](https://youtu.be/yyCvrN1HFUM)
+[![Nzuzo Pay Demo Video](https://img.shields.io/badge/Watch_Demo-3--5_min-red?style=for-the-badge&logo=youtube)](https://youtu.be/yyCvrN1HFUM)
 
 ## Employer Dashboard
 ![Employer Dashboard](./assets/employerdashboard.png)
