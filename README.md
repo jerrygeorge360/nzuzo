@@ -7,7 +7,6 @@
 [![fhEVM](https://img.shields.io/badge/fhEVM-%40fhevm%2Fsolidity_v0.11.1-00A86B?style=flat-square)](https://docs.zama.ai/fhevm)
 [![OpenZeppelin](https://img.shields.io/badge/OpenZeppelin-ERC721%20%7C%20ReentrancyGuard-4E5EE4?style=flat-square)](https://openzeppelin.com/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](LICENSE)
-[![Hackathon: PL_Genesis](https://img.shields.io/badge/Hackathon-PL__Genesis-blueviolet?style=flat-square)](https://plgenesis.com)
 
 ---
 
@@ -31,7 +30,6 @@
 - [Environment Variables](#environment-variables)
 - [Running Tests](#running-tests)
 - [Hardhat Tasks](#hardhat-tasks)
-- [Hackathon Alignment](#hackathon-alignment)
 - [Roadmap](#roadmap)
 - [License](#license)
 
@@ -231,10 +229,18 @@ npm run deploy:sepolia
 
 # Start the frontend dev server
 npm run frontend:dev
+
+# Start the faucet backend (in another terminal)
+npm run faucet:dev
+
+# Or run frontend + faucet together with Docker
+docker compose up -d --build
 ```
 
 Frontend runs at `http://localhost:5173`.  
 The live deployment is at **[nzuzo.prodigal.sbs](https://nzuzo.prodigal.sbs/)**.
+
+With Docker Compose, frontend runs at `http://localhost:8082` and faucet at `http://localhost:3001`.
 
 ---
 
@@ -295,33 +301,6 @@ npx hardhat payroll:add-employee \
   --employee <EMPLOYEE_ADDRESS> \
   --salary <AMOUNT_IN_USDC>
 ```
-
----
-
-## Hackathon Alignment
-
-### Zama: Confidential Onchain Finance
-
-Nzuzo Pay is a complete, production-quality implementation of the Zama challenge:
-
-- Uses `@fhevm/solidity ^0.11.1` — the current fhEVM Solidity library — as the core cryptographic primitive
-- Stores all employee salaries as `euint64` encrypted values; salary is never cleartext on-chain at any point
-- Executes batch payroll computation entirely on encrypted data via the fhEVM coprocessor
-- Implements the full three-tier FHE access control model (employer · employee · public)
-- Delivers a genuinely novel use case — confidential on-chain payroll, not just confidential token transfers
-- Production-quality architecture: factory pattern, soulbound NFTs, role-based UI, reentrancy guards, `cancun` EVM target, `viaIR` compilation
-
-### Protocol Labs — Crypto Track
-
-Nzuzo Pay aligns with the Crypto track's vision of new economic coordination systems:
-
-- Confidential on-chain payroll is a new coordination primitive for DAOs, Web3 companies, and remote-first organizations
-- Replaces the trusted HR intermediary with cryptographic access control enforced at the contract layer
-- Directly applicable to DAO compensation frameworks — an example use case listed in the Crypto track brief
-
-### Fresh Code
-
-This is a **fresh code** submission built specifically for PL_Genesis.
 
 ---
 

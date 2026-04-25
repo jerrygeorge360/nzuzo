@@ -2,6 +2,9 @@
   "name": "nzuzo-faucet",
   "version": "1.0.0",
   "main": "server.ts",
+  "scripts": {
+    "dev": "ts-node server.ts"
+  },
   "dependencies": {
     "cors": "^2.8.6",
     "dotenv": "^16.6.1",
